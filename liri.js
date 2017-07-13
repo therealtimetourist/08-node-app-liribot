@@ -24,21 +24,20 @@ inquirer.prompt([
 	        getRecentTweets();
 	        break;
 	    case "Spotify A Song":
-	        //getSpotifySong();
-	        mediaDetails("song");
+	        getMediaDetails("song");
 	        break;
 	    case "Get movie details":
-	        //getMovieDetails();
-	        mediaDetails("movie");
+	        getMediaDetails("movie");
 	        break;
 	    case "Do something else":
-	        getSpotifySong();
+	        getTextFromRandom();
 	        break;
 	    default:
 	        console.log("I don't know what you want from me.");
 	}
 });
 
+// ============================================================================
 function getRecentTweets(){
 	var client = new Twitter({
 		consumer_key: twitKeysList.consumer_key,
@@ -63,8 +62,10 @@ function getRecentTweets(){
 		console.log("//=======================================================//");
 	});
 }
+// ============================================================================
 
-function mediaDetails(mediaType){
+// ============================================================================
+function getMediaDetails(mediaType, mediaName){
 	inquirer.prompt([
 		{
 			type: "input",
@@ -73,6 +74,17 @@ function mediaDetails(mediaType){
 	    }
 	])
 	.then(function(inquirerResponse) {
+		
+		var strMedia = "";
+
+		if(inquirerResponse.mediaName.length == 0 ){
+			if(mediaType == "song"){
+				inquirerResponse.mediaName = 'The Sign';
+			} else{
+				inquirerResponse.mediaName = 'Mr. Nobody';
+			}
+		}
+
 		var arrMedia = inquirerResponse.mediaName.split(" ");
 		var strMedia = arrMedia[0]; // start variable with the first word of the title
 
@@ -128,3 +140,22 @@ function mediaDetails(mediaType){
 		}
 	});
 }
+// ============================================================================
+
+// ============================================================================
+function getTextFromRandom(){
+	var fs = require("fs");
+
+	fs.readFile("random.txt", "utf8", function(err, data) {
+		if (err) {
+			return console.log(err);
+		}
+
+		// Break string down by comma separation and store the contents in output array
+		var output = data.split(",");
+
+		var addition = "function(" + output[0] + "('song', output[1]){})";
+		console.log(addition);
+	});
+}
+// ============================================================================

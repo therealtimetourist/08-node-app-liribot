@@ -1,1 +1,1 @@
-mediaDetails,"I Want it That Way"
+getMediaDetails,"I Want it That Way"

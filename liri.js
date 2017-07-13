@@ -50,7 +50,10 @@ function getRecentTweets(){
 	client.get('statuses/user_timeline', params, function(error, tweets, response) {
 		console.log("//==================== Recent Tweets ====================//");
 		if (!error) {
-			//console.log(tweets); <-- the whole thing
+			if(tweets.length >= 20){
+				tweets.length = 20;	// error check in case there are less than 20 tweets
+			}
+
 			for(var i = 0; i < tweets.length; i++){
 				console.log("created: " + tweets[i].created_at);
 				console.log("\n" + tweets[i].text);
@@ -65,7 +68,7 @@ function getRecentTweets(){
 // ============================================================================
 
 // ============================================================================
-function getMediaDetails(mediaType, mediaName){
+function getMediaDetails(mediaType, mediaName1){
 	inquirer.prompt([
 		{
 			type: "input",
@@ -74,7 +77,7 @@ function getMediaDetails(mediaType, mediaName){
 	    }
 	])
 	.then(function(inquirerResponse) {
-		
+
 		var strMedia = "";
 
 		if(inquirerResponse.mediaName.length == 0 ){
@@ -153,9 +156,12 @@ function getTextFromRandom(){
 
 		// Break string down by comma separation and store the contents in output array
 		var output = data.split(",");
+		var addition = output[0];
 
-		var addition = "function(" + output[0] + "('song', output[1]){})";
-		console.log(addition);
+		switch(addition){
+			case "getMediaDetails":
+				getMediaDetails('song', output[1]);
+		}
 	});
 }
 // ============================================================================

@@ -68,7 +68,7 @@ function getRecentTweets(){
 // ============================================================================
 
 // ============================================================================
-function getMediaDetails(mediaType, mediaName1){
+function getMediaDetails(mediaType){
 	inquirer.prompt([
 		{
 			type: "input",
@@ -148,6 +148,7 @@ function getMediaDetails(mediaType, mediaName1){
 // ============================================================================
 function getTextFromRandom(){
 	var fs = require("fs");
+	var spotKeysList = keys.spotifyKeys;
 
 	fs.readFile("random.txt", "utf8", function(err, data) {
 		if (err) {
@@ -156,12 +157,42 @@ function getTextFromRandom(){
 
 		// Break string down by comma separation and store the contents in output array
 		var output = data.split(",");
-		var addition = output[0];
 
-		switch(addition){
-			case "getMediaDetails":
-				getMediaDetails('song', output[1]);
+		getMediaDetailsAlt(output[1]);
+	});
+}
+// ============================================================================
+
+
+// ============================================================================
+function getMediaDetailsAlt(media){
+	var arrMedia = media.split(" ");
+	var strMedia = arrMedia[0]; // start variable with the first word of the title
+
+	for (var i = 1; i < arrMedia.length; i++) {
+		strMedia = strMedia + "+" + arrMedia[i];
+	}
+	
+	var Spotify = require('node-spotify-api');
+	var spotify = new Spotify({
+		id: spotKeysList.id,
+		secret: spotKeysList.secret
+	}); console.log("spotify.id: " + spotify.id);
+
+	spotify.search({ type: 'track', query: strMedia }, function(error, response) {
+		if (!error) {
+			console.log("//=================== Song Details ======================//");
+			console.log("Item found:\n");
+			console.log("Artist(s): "    + response.tracks.items[0].artists[0].name);
+			console.log("Song Name: "    + response.tracks.items[0].name);
+			console.log("Preview Link: " + response.tracks.items[0].preview_url);
+			console.log("Album: "        + response.tracks.items[0].album.name);
+			console.log("//=======================================================//");
+		// else song not found
+		} else{
+			console.log('Error occurred: ' + error);
 		}
 	});
 }
 // ============================================================================
+

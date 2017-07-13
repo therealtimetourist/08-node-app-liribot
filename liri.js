@@ -1,19 +1,15 @@
-var keys = require('./keys.js');
-var keysList = keys.twitterKeys;
-
+// load required node packages
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
 var request = require('request');
 var inquirer = require("inquirer");
 
-//var arrTwitterKeys = [];
+// load app keys
+var keys = require('./keys.js');
+var twitKeysList = keys.twitterKeys;
+var spotKeysList = keys.spotifyKeys;
 
-//for (var key in keysList) {
-//	arrTwitterKeys.push(keysList[key]);
-//}
-//console.log("keysList: " + keysList.consumer_key);
-
-// create on screen menu
+// on screen menu
 inquirer.prompt([
 	{
       type: "list",
@@ -24,29 +20,31 @@ inquirer.prompt([
 ])
 .then(function(inquirerResponse) {
 	switch(inquirerResponse.commands) {
-    case "List my Recent Tweets":
-        getRecentTweets();
-        break;
-    case "Spotify A Song":
-        getSpotifySong();
-        break;
-    case "Get movie details":
-        getMovieDetails();
-        break;
-    case "Do something else":
-        getSpotifySong();
-        break;
-    default:
-        console.log("I don't know what you want from me.");
-}
+	    case "List my Recent Tweets":
+	        getRecentTweets();
+	        break;
+	    case "Spotify A Song":
+	        //getSpotifySong();
+	        mediaDetails("song");
+	        break;
+	    case "Get movie details":
+	        //getMovieDetails();
+	        mediaDetails("movie");
+	        break;
+	    case "Do something else":
+	        getSpotifySong();
+	        break;
+	    default:
+	        console.log("I don't know what you want from me.");
+	}
 });
 
 function getRecentTweets(){
 	var client = new Twitter({
-		consumer_key: keysList.consumer_key,
-		consumer_secret: keysList.consumer_secret,
-		access_token_key: keysList.access_token_key,
-		access_token_secret: keysList.access_token_secret
+		consumer_key: twitKeysList.consumer_key,
+		consumer_secret: twitKeysList.consumer_secret,
+		access_token_key: twitKeysList.access_token_key,
+		access_token_secret: twitKeysList.access_token_secret
 	});
 
 	var params = {screen_name: '@RealTimeTourist'};
@@ -66,12 +64,67 @@ function getRecentTweets(){
 	});
 }
 
-function getSpotifySong(){
-	console.log("//=================== Spotify a Song ====================//");
-	console.log("//=======================================================//");
-}
+function mediaDetails(mediaType){
+	inquirer.prompt([
+		{
+			type: "input",
+			message: "What is the " + mediaType + " name you are searching for?",
+			name: "mediaName"
+	    }
+	])
+	.then(function(inquirerResponse) {
+		var arrMedia = inquirerResponse.mediaName.split(" ");
+		var strMedia = arrMedia[0]; // start variable with the first word of the title
 
-function getMovieDetails(){
-	console.log("//================== Get Movie Details ==================//");
-	console.log("//=======================================================//");
+		for (var i = 1; i < arrMedia.length; i++) {
+			strMedia = strMedia + "+" + arrMedia[i];
+		}
+
+		if(mediaType =="song"){
+			var spotify = new Spotify({
+				id: spotKeysList.id,
+				secret: spotKeysList.secret
+			});
+
+			spotify.search({ type: 'track', query: strMedia }, function(error, response) {
+				// if song found
+				if (!error) {
+					console.log("//=================== Song Details ======================//");
+					console.log("Item found:\n");
+					console.log("Artist(s): "    + response.tracks.items[0].artists[0].name);
+					console.log("Song Name: "    + response.tracks.items[0].name);
+					console.log("Preview Link: " + response.tracks.items[0].preview_url);
+					console.log("Album: "        + response.tracks.items[0].album.name);
+					console.log("//=======================================================//");
+				// else song not found
+				} else{
+					console.log('Error occurred: ' + error);
+				}
+			});
+
+		}else if(mediaType =="movie"){
+			// Then run a request to the OMDB API with the movie specified
+			var queryUrl = "http://www.omdbapi.com/?t=" + strMedia + "&y=&plot=short&apikey=40e9cece";
+
+			request(queryUrl, function(error, response, body) {
+				// If the request is successful
+				if (!error && response.statusCode === 200) {
+					console.log("//================== Movie Details ======================//");
+					// Parse the body of the site and recover the details
+					console.log("Item found:\n");
+					console.log("Title: "                  + JSON.parse(body).Title);
+			    	console.log("Release Year: "           + JSON.parse(body).Year);
+			    	console.log("IMDB Rating: "            + JSON.parse(body).Ratings[0].Value);
+			    	console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings[1].Value);
+			    	console.log("Produced In: "            + JSON.parse(body).Country);
+			    	console.log("Language: "               + JSON.parse(body).Language);
+			    	console.log("Plot: "                   + JSON.parse(body).Plot);
+			    	console.log("Starring: "               + JSON.parse(body).Actors);
+			    	console.log("//=======================================================//");
+			  	} else{
+			  		console.log('Error occurred: ' + error);
+			  	}
+			});
+		}
+	});
 }

@@ -57,3 +57,9 @@ typings/
 # dotenv environment variables file
 .env
 
+# node modules
+node_modules
+
+# OS X hidden files
+.DS_Store
+

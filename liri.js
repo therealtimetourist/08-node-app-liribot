@@ -1,3 +1,7 @@
+
+// read/set environment vars
+require("dotenv").config();
+
 // load required node packages
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
@@ -5,7 +9,7 @@ var request = require('request');
 var inquirer = require("inquirer");
 
 // load app keys
-var keys = require('./keys.js');
+var keys = require('./keys');
 var twitKeysList = keys.twitterKeys;
 var spotKeysList = keys.spotifyKeys;
 
